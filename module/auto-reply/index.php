@@ -45,12 +45,46 @@
     </div>
 </div>
 <script>
+function loadAutoReply() {
+    $('#auto-reply-table').html('<tr><td colspan="4" class="text-center text-secondary py-4">Memuat...</td></tr>');
+    $.get('API/auto-reply.php', function(data) {
+        if (data.length === 0) {
+            $('#auto-reply-table').html('<tr><td colspan="4" class="text-center text-secondary py-4">Belum ada data</td></tr>');
+            return;
+        }
+        var html = '';
+        data.forEach(function(row, i) {
+            html += '<tr>' +
+                '<td>' + (i+1) + '</td>' +
+                '<td>' + row.keyword + '</td>' +
+                '<td>' + row.reply + '</td>' +
+                '<td>-</td>' +
+                '</tr>';
+        });
+        $('#auto-reply-table').html(html);
+    });
+}
+
 $('#tambah-auto-reply').on('click', function() {
     $('#modal-auto-reply').modal('show');
 });
 $('#form-auto-reply').on('submit', function(e) {
     e.preventDefault();
-    // TODO: Simpan auto reply ke backend
-    $('#modal-auto-reply').modal('hide');
+    var keyword = $('#keyword').val();
+    var reply = $('#reply').val();
+    $.post('API/auto-reply.php', { keyword: keyword, reply: reply })
+        .done(function(res) {
+            $('#modal-auto-reply').modal('hide');
+            $('#form-auto-reply')[0].reset();
+            loadAutoReply();
+            alert('Auto reply berhasil disimpan!');
+        })
+        .fail(function(xhr) {
+            alert(xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Gagal menyimpan auto reply!');
+        });
+});
+
+$(function() {
+    loadAutoReply();
 });
 </script> 

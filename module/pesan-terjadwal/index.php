@@ -50,12 +50,48 @@
     </div>
 </div>
 <script>
+function loadPesanTerjadwal() {
+    $('#pesan-terjadwal-table').html('<tr><td colspan="5" class="text-center text-secondary py-4">Memuat...</td></tr>');
+    $.get('API/pesan-terjadwal.php', function(data) {
+        if (data.length === 0) {
+            $('#pesan-terjadwal-table').html('<tr><td colspan="5" class="text-center text-secondary py-4">Belum ada data</td></tr>');
+            return;
+        }
+        var html = '';
+        data.forEach(function(row, i) {
+            html += '<tr>' +
+                '<td>' + (i+1) + '</td>' +
+                '<td>' + row.nomor + '</td>' +
+                '<td>' + row.pesan + '</td>' +
+                '<td>' + row.waktu + '</td>' +
+                '<td>-</td>' +
+                '</tr>';
+        });
+        $('#pesan-terjadwal-table').html(html);
+    });
+}
+
 $('#tambah-pesan').on('click', function() {
     $('#modal-pesan-terjadwal').modal('show');
 });
 $('#form-pesan-terjadwal').on('submit', function(e) {
     e.preventDefault();
-    // TODO: Simpan pesan terjadwal ke backend
-    $('#modal-pesan-terjadwal').modal('hide');
+    var nomor = $('#nomor').val();
+    var pesan = $('#pesan').val();
+    var waktu = $('#waktu').val();
+    $.post('API/pesan-terjadwal.php', { nomor: nomor, pesan: pesan, waktu: waktu })
+        .done(function(res) {
+            $('#modal-pesan-terjadwal').modal('hide');
+            $('#form-pesan-terjadwal')[0].reset();
+            loadPesanTerjadwal();
+            alert('Pesan terjadwal berhasil disimpan!');
+        })
+        .fail(function(xhr) {
+            alert(xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Gagal menyimpan pesan terjadwal!');
+        });
+});
+
+$(function() {
+    loadPesanTerjadwal();
 });
 </script> 
