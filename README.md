@@ -73,5 +73,5 @@ Siapapun bebas menggunakan source code ini secara gratis, **dengan syarat wajib 
 Jika belum memberikan star, maka dianggap masih berhutang sampai memberikan star.  
 Dukung terus pengembangan dengan cara sederhana ini, terima kasih!
 
-
+![Caranya](2.png)
 ISC © LKP Naura 
