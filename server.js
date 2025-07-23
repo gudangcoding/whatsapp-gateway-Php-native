@@ -10,6 +10,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 const rimraf = require('rimraf'); // pastikan sudah install: npm install rimraf
 const cron = require('node-cron');
+const cors = require('cors');
 
 // Simpan instance WhatsApp per nomor
 const waInstances = {};
@@ -25,6 +26,11 @@ const PORT = 3000;
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({
+  origin: '*', // Ganti dengan domain spesifik jika ingin lebih aman
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
@@ -146,14 +152,17 @@ io.on('connection', (socket) => {
 
 app.post('/api/send-message', async (req, res) => {
     if (!req.body) {
+        logError('Body kosong pada /api/send-message');
         return res.status(400).json({ success: false, error: 'Body kosong' });
     }
     const { pengirim, nomor, pesan } = req.body;
     if (!pengirim || !nomor || !pesan) {
+        logError('Field kosong pada /api/send-message');
         return res.status(400).json({ success: false, error: 'pengirim, nomor, dan pesan wajib diisi' });
     }
     const sock = waInstances[pengirim];
     if (!sock || !sock.user || !sock.user.id) {
+        logError('Device pengirim belum connected pada /api/send-message');
         return res.status(400).json({ success: false, error: 'Device pengirim belum connected' });
     }
     try {
@@ -161,17 +170,17 @@ app.post('/api/send-message', async (req, res) => {
         if (nomorTujuan.startsWith('0')) nomorTujuan = '62' + nomorTujuan.slice(1);
         if (!nomorTujuan.endsWith('@s.whatsapp.net')) nomorTujuan += '@s.whatsapp.net';
         const sendResult = await sock.sendMessage(nomorTujuan, { text: pesan });
-        // Simpan ke receive_chat sebagai pesan keluar
         simpanReceiveChat({
           id_pesan: sendResult.key.id,
           nomor: nomor,
           pesan: pesan,
-          from_me: 1,
+          from_me: '1',
           nomor_saya: sock.user.id.split(':')[0],
           tanggal: new Date()
         });
         res.json({ success: true, message: 'Pesan berhasil dikirim!' });
     } catch (err) {
+        logError('Error send-message: ' + (err && err.message ? err.message : err));
         res.status(500).json({ success: false, error: err.message || 'Gagal mengirim pesan' });
     }
 });
@@ -200,18 +209,18 @@ app.get('/api/device-status/:nomor', (req, res) => {
 
 // --- AUTO REPLY ENDPOINTS ---
 app.get('/api/auto-reply', (req, res) => {
-  db.query('SELECT * FROM auto_reply', (err, results) => {
+  db.query('SELECT * FROM autoreply', (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
 
 app.post('/api/auto-reply', (req, res) => {
-  const { keyword, reply } = req.body;
-  if (!keyword || !reply) {
+  const { keyword, response, media, case_sensitive } = req.body;
+  if (!keyword || !response) {
     return res.status(400).json({ error: 'Kata kunci dan balasan wajib diisi' });
   }
-  db.query('INSERT INTO auto_reply (keyword, reply) VALUES (?, ?)', [keyword, reply], (err) => {
+  db.query('INSERT INTO autoreply (keyword, response, media, case_sensitive) VALUES (?, ?, ?, ?)', [keyword, response, media || '', case_sensitive || '0'], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
@@ -219,18 +228,18 @@ app.post('/api/auto-reply', (req, res) => {
 
 // --- PESAN TERJADWAL ENDPOINTS ---
 app.get('/api/pesan-terjadwal', (req, res) => {
-  db.query('SELECT * FROM pesan_terjadwal', (err, results) => {
+  db.query("SELECT * FROM pesan WHERE status='MENUNGGU JADWAL' ORDER BY jadwal ASC", (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
 
 app.post('/api/pesan-terjadwal', (req, res) => {
-  const { nomor, pesan, waktu } = req.body;
-  if (!nomor || !pesan || !waktu) {
-    return res.status(400).json({ error: 'Nomor, pesan, dan waktu wajib diisi' });
+  const { nomor, pesan, jadwal } = req.body;
+  if (!nomor || !pesan || !jadwal) {
+    return res.status(400).json({ error: 'Nomor, pesan, dan jadwal wajib diisi' });
   }
-  db.query('INSERT INTO pesan_terjadwal (nomor, pesan, waktu) VALUES (?, ?, ?)', [nomor, pesan, waktu], (err) => {
+  db.query('INSERT INTO pesan (nomor, pesan, jadwal, status) VALUES (?, ?, ?, ?)', [nomor, pesan, jadwal, 'MENUNGGU JADWAL'], (err) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
   });
@@ -249,15 +258,15 @@ function simpanReceiveChat({id_pesan, nomor, pesan, from_me, nomor_saya, tanggal
   const tgl = tanggal || new Date();
   db.query('INSERT INTO receive_chat (id_pesan, nomor, pesan, from_me, nomor_saya, tanggal) VALUES (?, ?, ?, ?, ?, ?)',
     [id_pesan, nomor, pesan, from_me, nomor_saya, tgl], (err) => {
-    if (err) console.error('Gagal simpan receive_chat:', err.message);
+    if (err) logError('Gagal simpan receive_chat: ' + err.message);
   });
 }
 
 // --- CRON PESAN TERJADWAL ---
 cron.schedule('* * * * *', () => {
   const now = new Date();
-  const nowStr = now.toISOString().slice(0, 16).replace('T', ' ');
-  db.query("SELECT * FROM pesan_terjadwal WHERE waktu <= ? AND (status IS NULL OR status != 'sent')", [nowStr], (err, rows) => {
+  const nowStr = now.toISOString().slice(0, 19).replace('T', ' '); // yyyy-mm-dd HH:MM:SS
+  db.query("SELECT * FROM pesan WHERE status='MENUNGGU JADWAL' AND jadwal <= ?", [nowStr], (err, rows) => {
     if (err) return;
     rows.forEach(row => {
       const pengirim = Object.keys(waInstances)[0];
@@ -271,11 +280,29 @@ cron.schedule('* * * * *', () => {
             id_pesan: sendResult.key.id,
             nomor: row.nomor,
             pesan: row.pesan,
-            from_me: 1,
+            from_me: '1',
             nomor_saya: sock.user.id.split(':')[0],
-            tanggal: row.waktu
+            tanggal: row.jadwal
           });
-          db.query("UPDATE pesan_terjadwal SET status='sent' WHERE id=?", [row.id]);
+          // Logika pengulangan otomatis
+          let nextJadwal = null;
+          if (row.interval === '60s') {
+            nextJadwal = new Date(new Date(row.jadwal).getTime() + 60 * 1000);
+          } else if (row.interval === 'daily') {
+            nextJadwal = new Date(new Date(row.jadwal).getTime() + 24 * 60 * 60 * 1000);
+          } else if (row.interval === 'weekly') {
+            nextJadwal = new Date(new Date(row.jadwal).getTime() + 7 * 24 * 60 * 60 * 1000);
+          } else if (row.interval === 'monthly') {
+            let d = new Date(row.jadwal);
+            d.setMonth(d.getMonth() + 1);
+            nextJadwal = d;
+          }
+          if (nextJadwal) {
+            const nextJadwalStr = nextJadwal.toISOString().slice(0, 19).replace('T', ' ');
+            db.query("UPDATE pesan SET jadwal=?, status='MENUNGGU JADWAL' WHERE id=?", [nextJadwalStr, row.id]);
+          } else {
+            db.query("UPDATE pesan SET status='TERKIRIM' WHERE id=?", [row.id]);
+          }
         });
       }
     });
@@ -297,26 +324,45 @@ function setupAutoReply(sock) {
         id_pesan: msg.key.id,
         nomor: nomorPengirim,
         pesan: isiPesan,
-        from_me: 0,
+        from_me: '0',
         nomor_saya: sock.user.id.split(':')[0],
         tanggal: new Date(msg.messageTimestamp * 1000)
       });
     }
     if (!isiPesan) return;
-    db.query('SELECT * FROM auto_reply', (err, rows) => {
+    db.query('SELECT * FROM autoreply', (err, rows) => {
       if (err) return;
       rows.forEach(row => {
-        if (isiPesan.toLowerCase().includes(row.keyword.toLowerCase())) {
-          sock.sendMessage(msg.key.remoteJid, { text: row.reply }).then((sendResult) => {
-            simpanReceiveChat({
-              id_pesan: sendResult.key.id,
-              nomor: nomorPengirim,
-              pesan: row.reply,
-              from_me: 1,
-              nomor_saya: sock.user.id.split(':')[0],
-              tanggal: new Date()
+        let match = false;
+        if (row.case_sensitive === '1') {
+          match = isiPesan.includes(row.keyword);
+        } else {
+          match = isiPesan.toLowerCase().includes(row.keyword.toLowerCase());
+        }
+        if (match) {
+          if (row.media) {
+            sock.sendMessage(msg.key.remoteJid, { text: row.response, image: { url: row.media } }).then((sendResult) => {
+              simpanReceiveChat({
+                id_pesan: sendResult.key.id,
+                nomor: nomorPengirim,
+                pesan: row.response,
+                from_me: '1',
+                nomor_saya: sock.user.id.split(':')[0],
+                tanggal: new Date()
+              });
             });
-          });
+          } else {
+            sock.sendMessage(msg.key.remoteJid, { text: row.response }).then((sendResult) => {
+              simpanReceiveChat({
+                id_pesan: sendResult.key.id,
+                nomor: nomorPengirim,
+                pesan: row.response,
+                from_me: '1',
+                nomor_saya: sock.user.id.split(':')[0],
+                tanggal: new Date()
+              });
+            });
+          }
         }
       });
     });
@@ -327,3 +373,11 @@ server.listen(PORT, () => {
     console.log('Server running on http://localhost:' + PORT);
     // startSocket(); // This line is removed as per the new_code, as the socket connection is now managed per number.
 });
+
+const logError = (msg) => {
+  const fs = require('fs');
+  const logMsg = `[${new Date().toISOString()}] ${msg}\n`;
+  fs.appendFile('log_error.txt', logMsg, (err) => {
+    if (err) console.error('Gagal menulis log error:', err.message);
+  });
+};

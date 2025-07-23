@@ -9,12 +9,14 @@
                 <th>No</th>
                 <th>Nomor Tujuan</th>
                 <th>Pesan</th>
-                <th>Waktu Kirim</th>
+                <th>Jadwal</th>
+                <th>Interval</th>
+                <th>Status</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody id="pesan-terjadwal-table">
-            <tr><td colspan="5" class="text-center text-secondary py-4">Belum ada data</td></tr>
+            <tr><td colspan="7" class="text-center text-secondary py-4">Belum ada data</td></tr>
         </tbody>
     </table>
 </div>
@@ -37,8 +39,18 @@
                         <textarea class="form-control" id="pesan" name="pesan" rows="2" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="waktu" class="form-label">Waktu Kirim</label>
-                        <input type="datetime-local" class="form-control" id="waktu" name="waktu" required>
+                        <label for="jadwal" class="form-label">Jadwal Kirim</label>
+                        <input type="datetime-local" class="form-control" id="jadwal" name="jadwal" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="interval" class="form-label">Interval Pengulangan</label>
+                        <select class="form-control" id="interval" name="interval">
+                            <option value="">Sekali</option>
+                            <option value="60s">Setiap 60 Detik</option>
+                            <option value="daily">Harian</option>
+                            <option value="weekly">Mingguan</option>
+                            <option value="monthly">Bulanan</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -51,10 +63,10 @@
 </div>
 <script>
 function loadPesanTerjadwal() {
-    $('#pesan-terjadwal-table').html('<tr><td colspan="5" class="text-center text-secondary py-4">Memuat...</td></tr>');
+    $('#pesan-terjadwal-table').html('<tr><td colspan="7" class="text-center text-secondary py-4">Memuat...</td></tr>');
     $.get('API/pesan-terjadwal.php', function(data) {
         if (data.length === 0) {
-            $('#pesan-terjadwal-table').html('<tr><td colspan="5" class="text-center text-secondary py-4">Belum ada data</td></tr>');
+            $('#pesan-terjadwal-table').html('<tr><td colspan="7" class="text-center text-secondary py-4">Belum ada data</td></tr>');
             return;
         }
         var html = '';
@@ -63,7 +75,9 @@ function loadPesanTerjadwal() {
                 '<td>' + (i+1) + '</td>' +
                 '<td>' + row.nomor + '</td>' +
                 '<td>' + row.pesan + '</td>' +
-                '<td>' + row.waktu + '</td>' +
+                '<td>' + row.jadwal + '</td>' +
+                '<td>' + (row.interval || '-') + '</td>' +
+                '<td>' + (row.status || '-') + '</td>' +
                 '<td>-</td>' +
                 '</tr>';
         });
@@ -78,8 +92,9 @@ $('#form-pesan-terjadwal').on('submit', function(e) {
     e.preventDefault();
     var nomor = $('#nomor').val();
     var pesan = $('#pesan').val();
-    var waktu = $('#waktu').val();
-    $.post('API/pesan-terjadwal.php', { nomor: nomor, pesan: pesan, waktu: waktu })
+    var jadwal = $('#jadwal').val();
+    var interval = $('#interval').val();
+    $.post('API/pesan-terjadwal.php', { nomor: nomor, pesan: pesan, jadwal: jadwal, interval: interval })
         .done(function(res) {
             $('#modal-pesan-terjadwal').modal('hide');
             $('#form-pesan-terjadwal')[0].reset();

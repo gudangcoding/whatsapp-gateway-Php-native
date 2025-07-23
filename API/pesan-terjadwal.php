@@ -1,9 +1,10 @@
 <?php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 include '../helper/koneksi.php';
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
-    $result = $conn->query('SELECT * FROM pesan_terjadwal');
+    $result = $conn->query("SELECT id, nomor, pesan, jadwal, interval, status FROM pesan WHERE status='MENUNGGU JADWAL' ORDER BY jadwal ASC");
     $data = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
@@ -14,14 +15,16 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $nomor = $_POST['nomor'] ?? '';
     $pesan = $_POST['pesan'] ?? '';
-    $waktu = $_POST['waktu'] ?? '';
-    if (!$nomor || !$pesan || !$waktu) {
+    $jadwal = $_POST['jadwal'] ?? '';
+    $interval = $_POST['interval'] ?? '';
+    if (!$nomor || !$pesan || !$jadwal) {
         http_response_code(400);
-        echo json_encode(['error' => 'Nomor, pesan, dan waktu wajib diisi']);
+        echo json_encode(['error' => 'Nomor, pesan, dan jadwal wajib diisi']);
         exit;
     }
-    $stmt = $conn->prepare('INSERT INTO pesan_terjadwal (nomor, pesan, waktu) VALUES (?, ?, ?)');
-    $stmt->bind_param('sss', $nomor, $pesan, $waktu);
+    $stmt = $conn->prepare('INSERT INTO pesan (nomor, pesan, jadwal, `interval`, status) VALUES (?, ?, ?, ?, ?)');
+    $status = 'MENUNGGU JADWAL';
+    $stmt->bind_param('sssss', $nomor, $pesan, $jadwal, $interval, $status);
     $stmt->execute();
     echo json_encode(['success' => true]);
     exit;

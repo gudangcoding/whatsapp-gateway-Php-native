@@ -1,6 +1,6 @@
 <h1 class="mb-4 fw-bold text-secondary">Riwayat Pesan</h1>
 <div class="bg-white shadow rounded p-4">
-    <table class="table table-bordered table-hover align-middle">
+    <table id="history-table" class="table table-bordered table-hover align-middle">
         <thead class="table-light">
             <tr>
                 <th>No</th>
@@ -12,37 +12,57 @@
                 <th>Tanggal</th>
             </tr>
         </thead>
-        <tbody id="history-table">
+        <tbody>
             <tr><td colspan="7" class="text-center text-secondary py-4">Belum ada data</td></tr>
         </tbody>
     </table>
 </div>
 <script>
-function loadHistory() {
-    $('#history-table').html('<tr><td colspan="7" class="text-center text-secondary py-4">Memuat...</td></tr>');
-    $.get('API/history.php', function(data) {
-        if (data.length === 0) {
-            $('#history-table').html('<tr><td colspan="7" class="text-center text-secondary py-4">Belum ada data</td></tr>');
-            return;
+$(document).ready(function() {
+    // Inisialisasi DataTable pada elemen <table>, bukan <tbody>
+    $('#history-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: 'API/history.php',
+            type: 'POST'
+        },
+        columns: [
+            { 
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { data: 'id_pesan' },
+            { data: 'nomor' },
+            { data: 'pesan' },
+            { 
+                data: 'from_me',
+                render: function(data, type, row) {
+                    return data == 1 ? 'Ya' : 'Tidak';
+                }
+            },
+            { data: 'nomor_saya' },
+            { data: 'tanggal' }
+        ],
+        language: {
+            emptyTable: "Belum ada data",
+            processing: "Memuat...",
+            zeroRecords: "Belum ada data",
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+            paginate: {
+                first: "Pertama",
+                last: "Terakhir",
+                next: "Berikutnya",
+                previous: "Sebelumnya"
+            }
         }
-        var html = '';
-        data.forEach(function(row, i) {
-            html += '<tr>' +
-                '<td>' + (i+1) + '</td>' +
-                '<td>' + row.id_pesan + '</td>' +
-                '<td>' + row.nomor + '</td>' +
-                '<td>' + row.pesan + '</td>' +
-                '<td>' + (row.from_me == 1 ? 'Ya' : 'Tidak') + '</td>' +
-                '<td>' + row.nomor_saya + '</td>' +
-                '<td>' + row.tanggal + '</td>' +
-                '</tr>';
-        });
-        $('#history-table').html(html);
-    }).fail(function() {
-        $('#history-table').html('<tr><td colspan="7" class="text-danger text-center py-4">Gagal memuat data</td></tr>');
     });
-}
-$(function() {
-    loadHistory();
 });
 </script>

@@ -42,7 +42,7 @@ $('#form-kirim-pesan').on('submit', function(e) {
     $('#hasil-kirim').html('<span class="text-secondary">Mengirim...</span>');
     $('#info-gagal-kirim').hide().html('');
     $.ajax({
-        url: '/api/send-message',
+        url: 'http://localhost:3000/api/send-message',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ pengirim: pengirim, nomor: nomor, pesan: pesan }),

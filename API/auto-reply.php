@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 include '../helper/koneksi.php';
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
