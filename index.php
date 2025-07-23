@@ -1,4 +1,10 @@
-
+<?php
+session_start();
+if (!isset($_SESSION['username'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,6 +51,11 @@
                         <li class="nav-item mb-1">
                             <a href="?m=riwayat" class="nav-link text-dark fw-semibold">
                                 <i class="bi bi-chat-dots me-2 text-info"></i> Riwayat Pesan
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a href="logout.php" class="nav-link text-danger fw-semibold">
+                                <i class="bi bi-box-arrow-right me-2 text-danger"></i> Logout
                             </a>
                         </li>
                         <!-- Tambahkan menu lain di sini jika perlu -->
