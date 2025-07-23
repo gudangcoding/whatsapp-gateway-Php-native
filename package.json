@@ -1,0 +1,29 @@
+{
+  "name": "wa-gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "WhatsApp gateway"
+  ],
+  "author": "LKP Naura",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "baileys": "^6.7.18",
+    "express": "^5.1.0",
+    "express-fileupload": "^1.5.2",
+    "express-validator": "^7.2.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
+    "mysql": "^2.18.1",
+    "node-cron": "^4.2.1",
+    "qrcode": "^1.5.4",
+    "request": "^2.88.2",
+    "rimraf": "^6.0.1",
+    "socket.io": "^4.8.1"
+  }
+}

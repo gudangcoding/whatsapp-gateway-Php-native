@@ -1,0 +1,6 @@
+1. buat proyek mkdir wa-gateway
+2. npm init -y
+3. install library
+    npm i baileys express express-fileupload express-validator mysql node-cron qrcode request socket.io
+4. buat file server.js
+    coding
