@@ -69,5 +69,9 @@ WA Gateway adalah aplikasi gateway WhatsApp berbasis Node.js dan PHP yang memung
 Lihat file `catatan.txt` untuk langkah-langkah setup awal proyek.
 
 ## Lisensi
+Siapapun bebas menggunakan source code ini secara gratis, **dengan syarat wajib memberikan ⭐ (star) pada repository ini**.  
+Jika belum memberikan star, maka dianggap masih berhutang sampai memberikan star.  
+Dukung terus pengembangan dengan cara sederhana ini, terima kasih!
+
 
 ISC © LKP Naura 
