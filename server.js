@@ -318,7 +318,41 @@ cron.schedule('* * * * *', () => {
   });
 });
 
-// --- AUTO REPLY ON MESSAGE ---
+// Tambahkan SESSIONS_FILE dan fungsi get/set session status (mirip server.js kedua)
+const SESSIONS_FILE = './whatsapp-sessions.json';
+if (!fs.existsSync(SESSIONS_FILE)) fs.writeFileSync(SESSIONS_FILE, JSON.stringify([]));
+const getSessionsFile = () => JSON.parse(fs.readFileSync(SESSIONS_FILE));
+const setSessionsFile = (sessions) => fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions));
+
+// --- Tambahkan endpoint send-media seperti server.js kedua ---
+app.post('/api/send-media', async (req, res) => {
+    const { pengirim, nomor, filetype, url, filename, caption } = req.body;
+    if (!pengirim || !nomor || !filetype || !url) {
+        return res.status(400).json({ success: false, error: 'pengirim, nomor, filetype, dan url wajib diisi' });
+    }
+    const sock = waInstances[pengirim];
+    if (!sock || !sock.user || !sock.user.id) {
+        return res.status(400).json({ success: false, error: 'Device pengirim belum connected' });
+    }
+    let nomorTujuan = nomor.replace(/[^0-9]/g, '');
+    if (nomorTujuan.startsWith('0')) nomorTujuan = '62' + nomorTujuan.slice(1);
+    if (!nomorTujuan.endsWith('@s.whatsapp.net')) nomorTujuan += '@s.whatsapp.net';
+    try {
+        if (filetype === 'jpg' || filetype === 'png') {
+            await sock.sendMessage(nomorTujuan, { image: { url }, caption, mimetype: 'image/jpeg' });
+        } else if (filetype === 'pdf') {
+            await sock.sendMessage(nomorTujuan, { document: { url }, mimetype: 'application/pdf', fileName: filename ? filename + '.pdf' : undefined });
+        } else {
+            return res.status(400).json({ success: false, error: 'Filetype tidak dikenal' });
+        }
+        res.json({ success: true, message: 'Media berhasil dikirim!' });
+    } catch (err) {
+        logError('Error send-media: ' + (err && err.message ? err.message : err));
+        res.status(500).json({ success: false, error: err.message || 'Gagal mengirim media' });
+    }
+});
+
+// --- Tambahkan fungsi webhook pada auto-reply ---
 function setupAutoReply(sock) {
   sock.ev.on('messages.upsert', async (m) => {
     const msg = m.messages && m.messages[0];
@@ -339,6 +373,30 @@ function setupAutoReply(sock) {
       });
     }
     if (!isiPesan) return;
+
+    // --- Webhook mirip server.js kedua ---
+    const mynumb = sock.user.id.split(':')[0];
+    db.query('SELECT link_webhook FROM device WHERE nomor = ?', [mynumb], (err, result) => {
+      if (!err && result[0] && result[0].link_webhook) {
+        const webhookurl = result[0].link_webhook;
+        const request = require('request');
+        request({ url: webhookurl, method: "POST", json: { from: nomorPengirim, message: isiPesan } }, async (error, response) => {
+          if (!error && response && response.statusCode == 200 && response.body) {
+            const resBody = response.body;
+            if (resBody.mode === 'chat') {
+              await sock.sendMessage(msg.key.remoteJid, { text: resBody.pesan });
+            } else if (resBody.mode === 'reply') {
+              await sock.sendMessage(msg.key.remoteJid, { text: resBody.pesan }, { quoted: msg });
+            } else if (resBody.mode === 'picture' && resBody.data && resBody.data.url) {
+              let messageOptions = {};
+              if (resBody.data.caption) messageOptions.caption = resBody.data.caption;
+              await sock.sendMessage(msg.key.remoteJid, { image: { url: resBody.data.url }, ...messageOptions });
+            }
+          }
+        });
+      }
+    });
+
     db.query('SELECT * FROM autoreply', (err, rows) => {
       if (err) return;
       rows.forEach(row => {
@@ -377,6 +435,11 @@ function setupAutoReply(sock) {
     });
   });
 }
+
+// --- Redirect semua GET ke web utama (kecuali API) ---
+app.get(/^\/(?!api\/).*$/, function (req, res) {
+    res.redirect('http://whatsapp-gateway.test');
+});
 
 server.listen(PORT, () => {
     console.log('Server running on http://localhost:' + PORT);

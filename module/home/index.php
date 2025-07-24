@@ -103,6 +103,14 @@
                 </div>
                 <div class="modal-body">
                     <img id="qrcode-img" class="mb-3 rounded border" style="display:none; width:300px;" />
+                    <div id="wa-profile" style="display:none;">
+                        <div class="mb-2">
+                            <img id="wa-profile-img" src="" alt="Profile" class="rounded-circle border" style="width:80px;height:80px;object-fit:cover;">
+                        </div>
+                        <div class="mb-1 fw-bold" id="wa-profile-name"></div>
+                        <div class="mb-2 text-secondary" id="wa-profile-number"></div>
+                    </div>
+                    <button id="logout-btn" class="btn btn-danger mt-2" style="display:none;">Logout</button>
                     <div id="modal-status" class="mb-2 text-secondary fw-medium"></div>
                     <div id="modal-placeholder" class="text-secondary" style="display:block;">
                         Tidak ada data untuk ditampilkan.
@@ -135,8 +143,29 @@
             });
             $('#form-device').on('submit', function (e) {
                 e.preventDefault();
-                // TODO: Submit form via AJAX atau POST
-                $('#modal-device').modal('hide');
+                var formData = {
+                    pemilik: $('#pemilik').val(),
+                    nomor: $('#nomor').val(),
+                    link_webhook: $('#link_webhook').val()
+                };
+                $.ajax({
+                    url: 'module/home/tambah.php', // Ganti sesuai lokasi file PHP proses tambah device
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.success) {
+                            $('#modal-device').modal('hide');
+                            // Optional: reload tabel atau tambahkan baris baru tanpa reload
+                            location.reload();
+                        } else {
+                            alert(res.error || 'Gagal menambah device');
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Terjadi kesalahan: ' + xhr.responseText);
+                    }
+                });
             });
 
             // Handler tombol scan di setiap baris tabel
@@ -176,6 +205,16 @@
                 }
             });
 
+            // Logout button handler
+            $('#logout-btn').on('click', function() {
+                if (nomorScanAktif) {
+                    if (typeof socket !== 'undefined' && socket && socket.connected) {
+                        socket.emit('disconnect-device', { nomor: nomorScanAktif });
+                        $('#logout-btn').prop('disabled', true).text('Memutus...');
+                    }
+                }
+            });
+
             // Listen for connected event to update button to Disconnect
             if (typeof socket !== 'undefined' && socket) {
                 socket.on('connected', function (data) {
@@ -192,6 +231,34 @@
                         $btn.text('Scan');
                         $btn.data('connected', false);
                         $btn.prop('disabled', false);
+                    }
+                });
+                socket.on('connected', function (data) {
+                    if (data && data.nomor === nomorScanAktif) {
+                        $('#modal-status').text(data.message);
+                        $('#qrcode-img').hide();
+                        // --- Tampilkan profil WhatsApp jika tersedia ---
+                        if (data.profile) {
+                            $('#wa-profile-img').attr('src', data.profile.img || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.profile.name || data.nomor)).show();
+                            $('#wa-profile-name').text(data.profile.name || '-');
+                            $('#wa-profile-number').text(data.nomor);
+                            $('#wa-profile').show();
+                        } else {
+                            // fallback jika backend belum kirim profile
+                            $('#wa-profile-img').attr('src', 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.nomor)).show();
+                            $('#wa-profile-name').text('-');
+                            $('#wa-profile-number').text(data.nomor);
+                            $('#wa-profile').show();
+                        }
+                        $('#logout-btn').show().prop('disabled', false).text('Logout');
+                    }
+                });
+                socket.on('disconnected', function (data) {
+                    if (data && data.nomor === nomorScanAktif) {
+                        $('#modal-status').text(data.message);
+                        $('#qrcode-img').hide();
+                        $('#wa-profile').hide();
+                        $('#logout-btn').hide();
                     }
                 });
             }
@@ -232,6 +299,20 @@
                     if (data && data.nomor === nomorScanAktif) {
                         $('#modal-status').text(data.message);
                         $('#qrcode-img').hide();
+                        // --- Tampilkan profil WhatsApp jika tersedia ---
+                        if (data.profile) {
+                            $('#wa-profile-img').attr('src', data.profile.img || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.profile.name || data.nomor)).show();
+                            $('#wa-profile-name').text(data.profile.name || '-');
+                            $('#wa-profile-number').text(data.nomor);
+                            $('#wa-profile').show();
+                        } else {
+                            // fallback jika backend belum kirim profile
+                            $('#wa-profile-img').attr('src', 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.nomor)).show();
+                            $('#wa-profile-name').text('-');
+                            $('#wa-profile-number').text(data.nomor);
+                            $('#wa-profile').show();
+                        }
+                        $('#logout-btn').show().prop('disabled', false).text('Logout');
                     }
                 });
                 socket.on('disconnected', function (data) {
@@ -239,6 +320,8 @@
                     if (data && data.nomor === nomorScanAktif) {
                         $('#modal-status').text(data.message);
                         $('#qrcode-img').hide();
+                        $('#wa-profile').hide();
+                        $('#logout-btn').hide();
                     }
                 });
                 socket.on('device-status', function(data) {
