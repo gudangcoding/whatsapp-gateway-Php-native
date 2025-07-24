@@ -33,7 +33,16 @@ app.use(cors({
 }));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    // Express (Node.js) tidak bisa langsung menjalankan file PHP karena PHP adalah bahasa yang berbeda dan butuh interpreter sendiri.
+    // Solusi: 
+    // 1. Jalankan server PHP (misal: Apache, Nginx, atau built-in PHP server) secara terpisah.
+    // 2. Arahkan permintaan ke file PHP menggunakan reverse proxy (misal: dengan nginx atau http-proxy-middleware di Express).
+    // 3. Atau, gunakan child_process di Node.js untuk menjalankan script PHP secara manual (tidak direkomendasikan untuk produksi).
+    // Contoh reverse proxy sederhana (menggunakan http-proxy-middleware):
+    // const { createProxyMiddleware } = require('http-proxy-middleware');
+    // app.use('/php', createProxyMiddleware({ target: 'http://localhost:8000', changeOrigin: true }));
+    // res.redirect('/php/index.php');
+    res.sendFile(path.join(__dirname, 'index.html')); // Tetap gunakan HTML jika tidak ada server PHP
 });
 
 app.get('/api/numbers', (req, res) => {
