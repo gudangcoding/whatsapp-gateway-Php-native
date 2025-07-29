@@ -38,7 +38,7 @@ if (!$nomor || !$pesan) {
 }
 // Jika pengirim kosong, ambil device pertama dari database
 if (!$pengirim) {
-    $q = $conn->query("SELECT nomor FROM device LIMIT 1");
+    $q = $conn->query("SELECT nomor FROM nomor LIMIT 1");
     $row = $q ? $q->fetch_assoc() : null;
     $pengirim = $row ? $row['nomor'] : 'default';
 }

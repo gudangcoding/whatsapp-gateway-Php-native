@@ -1,0 +1,1 @@
+bisakah server.js dipecah saja biar kode tidak terlalu panjang, dan revisi agar bisa multi tenant, begitu juga semua file php di folder admin buatkan kodenya menjadi multi tenant dan tolong lengkapi dan edit langsung file DB.sql agar sesuai agar bisa saya import ke database untuk memperbaharui database sekarang yang sudah ada

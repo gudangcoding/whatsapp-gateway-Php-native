@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 include '../helper/koneksi.php';
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
-    $result = $conn->query('SELECT * FROM auto_reply');
+    $result = $conn->query('SELECT * FROM autoreply');
     $data = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
@@ -14,14 +14,16 @@ if ($method === 'GET') {
 }
 if ($method === 'POST') {
     $keyword = $_POST['keyword'] ?? '';
-    $reply = $_POST['reply'] ?? '';
-    if (!$keyword || !$reply) {
+    $response = $_POST['response'] ?? '';
+    $media = $_POST['media'] ?? '';
+    $case_sensitive = $_POST['case_sensitive'] ?? '0';
+    if (!$keyword || !$response) {
         http_response_code(400);
         echo json_encode(['error' => 'Kata kunci dan balasan wajib diisi']);
         exit;
     }
-    $stmt = $conn->prepare('INSERT INTO auto_reply (keyword, reply) VALUES (?, ?)');
-    $stmt->bind_param('ss', $keyword, $reply);
+    $stmt = $conn->prepare('INSERT INTO autoreply (keyword, response, media, case_sensitive) VALUES (?, ?, ?, ?)');
+    $stmt->bind_param('ssss', $keyword, $response, $media, $case_sensitive);
     $stmt->execute();
     echo json_encode(['success' => true]);
     exit;

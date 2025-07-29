@@ -1,302 +1,221 @@
+-- Database: wa-gateway
+-- Multi-tenant WhatsApp Gateway Database Schema
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- Drop database if exists (optional)
+-- DROP DATABASE IF EXISTS `wa-gateway`;
 
+-- Create database
+CREATE DATABASE IF NOT EXISTS `wa-gateway` 
+CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+USE `wa-gateway`;
 
---
--- Database: `xdcom_WALITE`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `account`
---
-
-CREATE TABLE `account` (
-  `id` int(11) NOT NULL,
-  `username` varchar(255) NOT NULL,
+-- Table: users (multi-tenant users)
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL UNIQUE,
   `password` varchar(255) NOT NULL,
-  `level` enum('1','2') NOT NULL DEFAULT '2' COMMENT '1 = ADMIN\r\n2 = CS'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `full_name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL UNIQUE,
+  `phone` varchar(20) DEFAULT NULL,
+  `package_type` enum('basic','premium','enterprise') DEFAULT 'basic',
+  `status` enum('active','inactive','suspended') DEFAULT 'active',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_username` (`username`),
+  KEY `idx_email` (`email`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `account`
---
+-- Table: user_api_keys (API keys untuk setiap user)
+CREATE TABLE `user_api_keys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `api_key` varchar(255) NOT NULL UNIQUE,
+  `name` varchar(100) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_api_key` (`api_key`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `account` (`id`, `username`, `password`, `level`) VALUES
-(5, 'admin', '7c4a8d09ca3762af61e59520943dc26494f8941b', '1');
+-- Table: user_limits (limit penggunaan untuk setiap user)
+CREATE TABLE `user_limits` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `max_devices` int(11) DEFAULT 1,
+  `max_messages` int(11) DEFAULT 1000,
+  `max_auto_replies` int(11) DEFAULT 10,
+  `max_scheduled_messages` int(11) DEFAULT 50,
+  `used_messages` int(11) DEFAULT 0,
+  `reset_date` date DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `autoreply`
---
-
-CREATE TABLE `autoreply` (
-  `id` int(11) NOT NULL,
-  `keyword` varchar(255) CHARACTER SET utf8 NOT NULL,
-  `response` varchar(255) CHARACTER SET utf8 NOT NULL,
-  `media` varchar(200) NOT NULL,
-  `case_sensitive` enum('0','1') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `blast`
---
-
-CREATE TABLE `blast` (
-  `id` int(11) NOT NULL,
-  `nomor` text NOT NULL,
-  `pesan` text NOT NULL,
-  `media` varchar(255) DEFAULT NULL,
-  `jadwal` datetime NOT NULL,
-  `make_by` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `contacts`
---
-
-CREATE TABLE `contacts` (
-  `id` int(11) NOT NULL,
-  `number` varchar(111) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `type` enum('Personal','Group') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `google_form`
---
-
-CREATE TABLE `google_form` (
-  `id` int(11) NOT NULL,
-  `form_id` varchar(255) NOT NULL,
-  `form_name` varchar(255) NOT NULL,
-  `target` varchar(255) NOT NULL,
-  `pesan` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `google_form_pesan`
---
-
-CREATE TABLE `google_form_pesan` (
-  `id` int(11) NOT NULL,
-  `id_pesan` varchar(255) NOT NULL,
-  `nomor` varchar(255) NOT NULL,
-  `pesan` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `nomor`
---
-
+-- Table: nomor (devices/nomor WhatsApp)
 CREATE TABLE `nomor` (
-  `id` int(11) NOT NULL,
-  `nama` varchar(255) NOT NULL,
-  `nomor` varchar(255) NOT NULL,
-  `pesan` text NOT NULL,
-  `make_by` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nomor` varchar(20) NOT NULL UNIQUE,
+  `nama` varchar(100) DEFAULT NULL,
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_nomor` (`nomor`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
+-- Table: user_devices (relasi user dengan device)
+CREATE TABLE `user_devices` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `device_id` int(11) NOT NULL,
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_device` (`user_id`, `device_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_device_id` (`device_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`device_id`) REFERENCES `nomor` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table `pengaturan`
---
-
-CREATE TABLE `pengaturan` (
-  `id` int(11) NOT NULL,
-  `chunk` int(11) NOT NULL,
-  `hook_group` varchar(255) NOT NULL,
-  `nomor` varchar(255) NOT NULL,
-  `api_key` varchar(255) NOT NULL DEFAULT '310ea2abbaafe1844ac63f57ff20860b78e77c40',
-  `callback` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pesan`
---
-
-CREATE TABLE `pesan` (
-  `id` int(11) NOT NULL,
-  `id_blast` varchar(255) NOT NULL,
-  `nomor` varchar(255) NOT NULL,
-  `pesan` text NOT NULL,
-  `media` varchar(255) DEFAULT NULL,
-  `status` enum('MENUNGGU JADWAL','GAGAL','TERKIRIM') NOT NULL DEFAULT 'MENUNGGU JADWAL',
-  `jadwal` datetime NOT NULL,
-  `tiap_bulan` enum('0','1') NOT NULL DEFAULT '0',
-  `last_month` varchar(255) DEFAULT NULL,
-  `make_by` varchar(255) DEFAULT NULL,
-  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `receive_chat`
---
-
+-- Table: receive_chat (riwayat pesan masuk dan keluar)
 CREATE TABLE `receive_chat` (
-  `id` int(11) NOT NULL,
-  `id_pesan` varchar(200) NOT NULL,
-  `nomor` varchar(255) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_pesan` varchar(100) DEFAULT NULL,
+  `nomor` varchar(20) NOT NULL,
   `pesan` text NOT NULL,
-  `from_me` enum('0','1') NOT NULL DEFAULT '0',
-  `nomor_saya` varchar(255) DEFAULT NULL,
-  `tanggal` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `from_me` enum('0','1') DEFAULT '0',
+  `nomor_saya` varchar(20) DEFAULT NULL,
+  `tanggal` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `user_id` int(11) DEFAULT NULL,
+  `message_type` varchar(20) DEFAULT 'text',
+  `media_url` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_nomor` (`nomor`),
+  KEY `idx_tanggal` (`tanggal`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_from_me` (`from_me`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for dumped tables
---
+-- Table: autoreply (auto reply berdasarkan keyword)
+CREATE TABLE `autoreply` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `device_nomor` varchar(20) NOT NULL,
+  `keyword` varchar(255) NOT NULL,
+  `response` text NOT NULL,
+  `case_sensitive` enum('0','1') DEFAULT '0',
+  `is_active` tinyint(1) DEFAULT 1,
+  `media` text DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_device_nomor` (`device_nomor`),
+  KEY `idx_is_active` (`is_active`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `account`
---
-ALTER TABLE `account`
-  ADD PRIMARY KEY (`id`);
+-- Table: pesan (pesan terjadwal)
+CREATE TABLE `pesan` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `nomor` varchar(20) NOT NULL,
+  `pesan` text NOT NULL,
+  `jadwal` datetime NOT NULL,
+  `status` enum('MENUNGGU JADWAL','TERKIRIM','GAGAL') DEFAULT 'MENUNGGU JADWAL',
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_nomor` (`nomor`),
+  KEY `idx_jadwal` (`jadwal`),
+  KEY `idx_status` (`status`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `autoreply`
---
-ALTER TABLE `autoreply`
-  ADD PRIMARY KEY (`id`);
+-- Table: user_activity_logs (log aktivitas user)
+CREATE TABLE `user_activity_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `action` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` text DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_action` (`action`),
+  KEY `idx_created_at` (`created_at`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `blast`
---
-ALTER TABLE `blast`
-  ADD PRIMARY KEY (`id`);
+-- Table: webhook_logs (log webhook untuk integrasi)
+CREATE TABLE `webhook_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `device_nomor` varchar(20) DEFAULT NULL,
+  `webhook_url` text NOT NULL,
+  `payload` text NOT NULL,
+  `response_code` int(11) DEFAULT NULL,
+  `response_body` text DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_device_nomor` (`device_nomor`),
+  KEY `idx_created_at` (`created_at`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Indexes for table `contacts`
---
-ALTER TABLE `contacts`
-  ADD PRIMARY KEY (`id`);
+-- Insert default admin user
+INSERT INTO `users` (`username`, `password`, `full_name`, `email`, `package_type`, `status`) VALUES
+('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrator', 'admin@wa-gateway.com', 'enterprise', 'active');
 
---
--- Indexes for table `google_form`
---
-ALTER TABLE `google_form`
-  ADD PRIMARY KEY (`id`);
+-- Insert default API key for admin
+INSERT INTO `user_api_keys` (`user_id`, `api_key`, `name`) VALUES
+(1, 'admin-api-key-123456789', 'Default Admin API Key');
 
---
--- Indexes for table `google_form_pesan`
---
-ALTER TABLE `google_form_pesan`
-  ADD PRIMARY KEY (`id`);
+-- Insert default limits for admin
+INSERT INTO `user_limits` (`user_id`, `max_devices`, `max_messages`, `max_auto_replies`, `max_scheduled_messages`) VALUES
+(1, 100, 100000, 1000, 10000);
 
---
--- Indexes for table `nomor`
---
-ALTER TABLE `nomor`
-  ADD PRIMARY KEY (`id`);
+-- Insert sample devices (optional)
+INSERT INTO `nomor` (`nomor`, `nama`, `status`) VALUES
+('6281381830651', 'Device Admin 1', 'active'),
+('6281283804283', 'Device Admin 2', 'active');
 
---
--- Indexes for table `pengaturan`
---
-ALTER TABLE `pengaturan`
-  ADD PRIMARY KEY (`id`);
+-- Assign devices to admin
+INSERT INTO `user_devices` (`user_id`, `device_id`, `status`) VALUES
+(1, 1, 'active'),
+(1, 2, 'active');
 
---
--- Indexes for table `pesan`
---
-ALTER TABLE `pesan`
-  ADD PRIMARY KEY (`id`);
+-- Create indexes for better performance
+CREATE INDEX `idx_receive_chat_user_date` ON `receive_chat` (`user_id`, `tanggal`);
+CREATE INDEX `idx_autoreply_device_active` ON `autoreply` (`device_nomor`, `is_active`);
+CREATE INDEX `idx_pesan_user_status` ON `pesan` (`user_id`, `status`);
+CREATE INDEX `idx_activity_logs_user_date` ON `user_activity_logs` (`user_id`, `created_at`);
 
---
--- Indexes for table `receive_chat`
---
-ALTER TABLE `receive_chat`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `account`
---
-ALTER TABLE `account`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT for table `autoreply`
---
-ALTER TABLE `autoreply`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `blast`
---
-ALTER TABLE `blast`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `contacts`
---
-ALTER TABLE `contacts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `google_form`
---
-ALTER TABLE `google_form`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `google_form_pesan`
---
-ALTER TABLE `google_form_pesan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `nomor`
---
-ALTER TABLE `nomor`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `pengaturan`
---
-ALTER TABLE `pengaturan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `pesan`
---
-ALTER TABLE `pesan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `receive_chat`
---
-ALTER TABLE `receive_chat`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- Add comments for documentation
+ALTER TABLE `users` COMMENT = 'Multi-tenant users table';
+ALTER TABLE `user_api_keys` COMMENT = 'API keys for each user';
+ALTER TABLE `user_limits` COMMENT = 'Usage limits for each user';
+ALTER TABLE `nomor` COMMENT = 'WhatsApp devices/numbers';
+ALTER TABLE `user_devices` COMMENT = 'User-device relationships';
+ALTER TABLE `receive_chat` COMMENT = 'Message history (incoming/outgoing)';
+ALTER TABLE `autoreply` COMMENT = 'Auto reply rules';
+ALTER TABLE `pesan` COMMENT = 'Scheduled messages';
+ALTER TABLE `user_activity_logs` COMMENT = 'User activity tracking';
+ALTER TABLE `webhook_logs` COMMENT = 'Webhook integration logs';
