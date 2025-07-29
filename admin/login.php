@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } else {
             // Cek di tabel account (admin/CS)
-            $stmt = $conn->prepare("SELECT * FROM account WHERE username = ? AND password = ?");
+            // Sesuaikan query dengan struktur tabel 'account' Anda, misal kolomnya 'user_name', 'user_pass', dan 'is_active'
+            $stmt = $conn->prepare("SELECT id, username, status FROM users WHERE username = ? AND password = ? AND status = 1");
             $stmt->bind_param('ss', $username, $password_hash);
             $stmt->execute();
             $result = $stmt->get_result();
