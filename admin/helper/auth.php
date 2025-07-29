@@ -1,5 +1,6 @@
 <?php
-session_start();
+// ob_clean();
+// session_start();
 
 /**
  * Helper functions untuk authentication dan authorization multi-tenant

@@ -1,6 +1,6 @@
 <?php
-require_once '../../helper/auth.php';
-require_once '../../helper/koneksi.php';
+require_once 'helper/auth.php';
+require_once 'helper/koneksi.php';
 
 // Require authentication
 requireAuth();

@@ -1,0 +1,62 @@
+2025-07-29 03:38:52 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:38:52 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:38:52 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753760321-1","gross_amount":299000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"business","price":299000,"quantity":1,"name":"WhatsApp Gateway - Business Plan"}]}
+2025-07-29 03:38:52 Midtrans API Response: 
+2025-07-29 03:38:52 Midtrans HTTP Code: 0
+2025-07-29 03:38:52 Midtrans CURL Error: Could not resolve host: api.sandbox.midtrans.com
+2025-07-29 03:38:52 CURL Error: Could not resolve host: api.sandbox.midtrans.com
+2025-07-29 03:39:05 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:39:05 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:39:05 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753760344-1","gross_amount":99000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"starter","price":99000,"quantity":1,"name":"WhatsApp Gateway - Starter Plan"}]}
+2025-07-29 03:39:05 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"c9462ca1-8ab5-4b17-a4b4-6e30a1b2a7bd","order_id":"UPG-1753760344-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:39:12","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750030477045183","expiry_time":"2025-07-30 10:39:12"}
+2025-07-29 03:39:05 Midtrans HTTP Code: 200
+2025-07-29 03:39:05 Midtrans CURL Error: 
+2025-07-29 03:39:05 No token in response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"c9462ca1-8ab5-4b17-a4b4-6e30a1b2a7bd","order_id":"UPG-1753760344-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:39:12","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750030477045183","expiry_time":"2025-07-30 10:39:12"}
+2025-07-29 03:40:36 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:40:36 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:40:36 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753760436-1","gross_amount":99000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"starter","price":99000,"quantity":1,"name":"WhatsApp Gateway - Starter Plan"}]}
+2025-07-29 03:40:36 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"75a51766-6803-464a-a9f6-7b9bbdd6a205","order_id":"UPG-1753760436-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:40:43","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750029516737423","expiry_time":"2025-07-30 10:40:43"}
+2025-07-29 03:40:36 Midtrans HTTP Code: 200
+2025-07-29 03:40:36 Midtrans CURL Error: 
+2025-07-29 03:42:18 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:42:18 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:42:18 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753760537-1","gross_amount":299000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"business","price":299000,"quantity":1,"name":"WhatsApp Gateway - Business Plan"}]}
+2025-07-29 03:42:18 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"24761237-c0fc-41f4-85b8-c28392d472e4","order_id":"UPG-1753760537-1","merchant_id":"M127585","gross_amount":"299000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:42:25","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750059717977811","expiry_time":"2025-07-30 10:42:24"}
+2025-07-29 03:42:18 Midtrans HTTP Code: 200
+2025-07-29 03:42:18 Midtrans CURL Error: 
+2025-07-29 03:52:31 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:52:31 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:52:31 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761150-1","gross_amount":299000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"business","price":299000,"quantity":1,"name":"WhatsApp Gateway - Business Plan"}]}
+2025-07-29 03:52:31 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"4267a97a-865a-425d-b983-b628f904c489","order_id":"UPG-1753761150-1","merchant_id":"M127585","gross_amount":"299000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:52:38","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750002247607620","expiry_time":"2025-07-30 10:52:38"}
+2025-07-29 03:52:31 Midtrans HTTP Code: 200
+2025-07-29 03:52:31 Midtrans CURL Error: 
+2025-07-29 03:53:39 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:53:39 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:53:39 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761217-1","gross_amount":299000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"business","price":299000,"quantity":1,"name":"WhatsApp Gateway - Business Plan"}]}
+2025-07-29 03:53:39 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"1daaae14-2d94-4e0e-82a3-314a616f5196","order_id":"UPG-1753761217-1","merchant_id":"M127585","gross_amount":"299000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:53:45","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750033594531762","expiry_time":"2025-07-30 10:53:45"}
+2025-07-29 03:53:39 Midtrans HTTP Code: 200
+2025-07-29 03:53:39 Midtrans CURL Error: 
+2025-07-29 03:55:01 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:55:01 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:55:01 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761301-1","gross_amount":299000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"business","price":299000,"quantity":1,"name":"WhatsApp Gateway - Business Plan"}]}
+2025-07-29 03:55:01 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"722ede53-b187-4f02-8d13-2f94939eadac","order_id":"UPG-1753761301-1","merchant_id":"M127585","gross_amount":"299000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:55:08","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750028665217521","expiry_time":"2025-07-30 10:55:08"}
+2025-07-29 03:55:01 Midtrans HTTP Code: 200
+2025-07-29 03:55:01 Midtrans CURL Error: 
+2025-07-29 03:55:18 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:55:18 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:55:18 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761318-1","gross_amount":99000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"starter","price":99000,"quantity":1,"name":"WhatsApp Gateway - Starter Plan"}]}
+2025-07-29 03:55:18 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"f908051b-f986-4fde-b081-890c04a865fb","order_id":"UPG-1753761318-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:55:25","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750030829249173","expiry_time":"2025-07-30 10:55:25"}
+2025-07-29 03:55:18 Midtrans HTTP Code: 200
+2025-07-29 03:55:18 Midtrans CURL Error: 
+2025-07-29 03:55:50 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 03:55:50 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 03:55:50 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761350-1","gross_amount":99000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"starter","price":99000,"quantity":1,"name":"WhatsApp Gateway - Starter Plan"}]}
+2025-07-29 03:55:50 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"40988f54-f991-48e9-9d1d-050a0ed0c9b2","order_id":"UPG-1753761350-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 10:55:57","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750075746702859","expiry_time":"2025-07-30 10:55:57"}
+2025-07-29 03:55:50 Midtrans HTTP Code: 200
+2025-07-29 03:55:50 Midtrans CURL Error: 
+2025-07-29 04:01:44 Midtrans API URL: https://api.sandbox.midtrans.com/v2/charge
+2025-07-29 04:01:44 Midtrans Server Key: SB-Mid-ser...
+2025-07-29 04:01:44 Midtrans Request: {"payment_type":"bank_transfer","transaction_details":{"order_id":"UPG-1753761702-1","gross_amount":99000},"customer_details":{"first_name":"Administrator","email":"admin@wa-gateway.com","phone":""},"item_details":[{"id":"starter","price":99000,"quantity":1,"name":"WhatsApp Gateway - Starter Plan"}]}
+2025-07-29 04:01:44 Midtrans API Response: {"status_code":"201","status_message":"Success, PERMATA VA transaction is successful","transaction_id":"c213adfa-c6e7-41d6-b62f-09311ca63bdf","order_id":"UPG-1753761702-1","merchant_id":"M127585","gross_amount":"99000.00","currency":"IDR","payment_type":"bank_transfer","transaction_time":"2025-07-29 11:01:50","transaction_status":"pending","fraud_status":"accept","permata_va_number":"2750092614875993","expiry_time":"2025-07-30 11:01:50"}
+2025-07-29 04:01:44 Midtrans HTTP Code: 200
+2025-07-29 04:01:44 Midtrans CURL Error: 

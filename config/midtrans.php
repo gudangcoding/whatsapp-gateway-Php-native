@@ -1,0 +1,31 @@
+<?php
+// Midtrans Configuration
+// Replace these with your actual Midtrans credentials
+
+// Sandbox (Testing) Environment
+define('MIDTRANS_SERVER_KEY_SANDBOX', 'SB-Mid-server-Tepvoz60wXJL5wbk8DUKwCOY');
+define('MIDTRANS_CLIENT_KEY_SANDBOX', 'SB-Mid-client-MhvyXioACTyrI6-U');
+define('MIDTRANS_MERCHANT_ID_SANDBOX', 'M127585');
+
+// Production Environment
+define('MIDTRANS_SERVER_KEY_PRODUCTION', 'YOUR-MIDTRANS-SERVER-KEY-PRODUCTION');
+define('MIDTRANS_CLIENT_KEY_PRODUCTION', 'YOUR-MIDTRANS-CLIENT-KEY-PRODUCTION');
+define('MIDTRANS_MERCHANT_ID_PRODUCTION', 'YOUR-MIDTRANS-MERCHANT-ID-PRODUCTION');
+
+// Environment setting (true for production, false for sandbox)
+define('MIDTRANS_PRODUCTION', false);
+
+// Get the appropriate keys based on environment
+if (MIDTRANS_PRODUCTION) {
+    define('MIDTRANS_SERVER_KEY', MIDTRANS_SERVER_KEY_PRODUCTION);
+    define('MIDTRANS_CLIENT_KEY', MIDTRANS_CLIENT_KEY_PRODUCTION);
+    define('MIDTRANS_MERCHANT_ID', MIDTRANS_MERCHANT_ID_PRODUCTION);
+} else {
+    define('MIDTRANS_SERVER_KEY', MIDTRANS_SERVER_KEY_SANDBOX);
+    define('MIDTRANS_CLIENT_KEY', MIDTRANS_CLIENT_KEY_SANDBOX);
+    define('MIDTRANS_MERCHANT_ID', MIDTRANS_MERCHANT_ID_SANDBOX);
+}
+
+// Demo mode (when no keys are configured)
+define('MIDTRANS_DEMO_MODE', (MIDTRANS_SERVER_KEY === 'YOUR-MIDTRANS-SERVER-KEY-SANDBOX' || empty(MIDTRANS_SERVER_KEY) || MIDTRANS_SERVER_KEY === 'YOUR-MIDTRANS-SERVER-KEY-PRODUCTION'));
+?> 
